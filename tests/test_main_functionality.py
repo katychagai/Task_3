@@ -1,8 +1,8 @@
 import allure
-import time
 from src.pages.main_page import MainPage
 from src.pages.login_page import LoginPage
 from src.urls import MAIN_PAGE, LOGIN_PAGE, ORDERS_FEED_PAGE
+from src.locators import MainPageLocators
 
 
 @allure.epic("Stellar Burgers UI")
@@ -24,6 +24,7 @@ class TestMainFunctionality:
         
         with allure.step("Проверяем переход на главную страницу (конструктор)"):
             main_page.wait_for_url(MAIN_PAGE)
+            assert main_page.is_url_contains(MAIN_PAGE)
     
     @allure.story("Навигация")
     @allure.title("Переход по клику на 'Лента заказов'")
@@ -35,6 +36,7 @@ class TestMainFunctionality:
         
         with allure.step("Проверяем переход на страницу ленты заказов"):
             main_page.wait_for_url(ORDERS_FEED_PAGE)
+            assert main_page.is_url_contains(ORDERS_FEED_PAGE)
     
     @allure.story("Ингредиенты")
     @allure.title("При клике на ингредиент появляется всплывающее окно с деталями")
@@ -45,7 +47,7 @@ class TestMainFunctionality:
             main_page.click_first_ingredient()
         
         with allure.step("Проверяем появление модального окна с деталями"):
-            assert main_page.is_modal_window_visible(), "Модальное окно должно появиться после клика на ингредиент"
+            assert main_page.is_modal_window_visible()
     
     @allure.story("Ингредиенты")
     @allure.title("Всплывающее окно закрывается кликом по крестику")
@@ -59,8 +61,8 @@ class TestMainFunctionality:
             main_page.click_modal_close_button()
         
         with allure.step("Проверяем, что модальное окно закрылось"):
-            time.sleep(0.5)
-            assert not main_page.is_modal_window_visible(), "Модальное окно должно закрыться"
+            main_page.wait_for_modal_to_disappear()
+            assert not main_page.is_modal_window_visible()
     
     @allure.story("Конструктор")
     @allure.title("При добавлении ингредиента в заказ увеличивается каунтер")
@@ -68,26 +70,20 @@ class TestMainFunctionality:
         main_page = MainPage(driver)
         
         with allure.step("Прокручиваем в самый верх страницы (секция 'Булки' должна быть видна)"):
-            driver.execute_script("window.scrollTo(0, 0);")
-            time.sleep(0.3)
+            main_page.execute_script("window.scrollTo(0, 0);")
+            # Ждем, пока секция "Булки" станет видимой
+            main_page.wait.until(lambda d: main_page.find_elements(MainPageLocators.INGREDIENT_COUNTER_IN_BUNS))
         
         with allure.step("Получаем начальное значение счетчика первого ингредиента из секции 'Булки'"):
             initial_counter = main_page.get_ingredient_counter()
-            time.sleep(1)  # Задержка для получения счетчика ингредиента в секции "Булки"
         
         with allure.step("Добавляем ингредиент в конструктор (перетаскиваем)"):
             main_page.drag_ingredient_to_constructor()
-            time.sleep(3)  # Ждем обновления счетчика
+            # Ждем обновления счетчика
+            main_page.wait.until(lambda d: main_page.get_ingredient_counter() > initial_counter)
         
         with allure.step("Проверяем, что счетчик увеличился"):
-            # Пробуем получить счетчик несколько раз с задержкой
-            new_counter = initial_counter
-            for _ in range(5):
-                new_counter = main_page.get_ingredient_counter()
-                if new_counter > initial_counter:
-                    break
-                time.sleep(0.5)
-            
+            new_counter = main_page.get_ingredient_counter()
             assert new_counter > initial_counter
     
     @allure.story("Заказ")
@@ -97,22 +93,12 @@ class TestMainFunctionality:
         
         with allure.step("Добавляем ингредиенты в конструктор"):
             main_page.drag_ingredient_to_constructor()
-            time.sleep(1)
             main_page.drag_ingredient_to_constructor()
-            time.sleep(1)
         
         with allure.step("Кликаем на кнопку 'Оформить заказ'"):
             main_page.click_order_button()
         
         with allure.step("Проверяем появление модального окна с номером заказа"):
-            time.sleep(5)
             assert main_page.is_order_modal_visible()
-            
-            order_number = None
-            for _ in range(10):
-                order_number = main_page.get_order_number()
-                if order_number:
-                    break
-                time.sleep(0.5)
-            
+            order_number = main_page.get_order_number()
             assert order_number is not None

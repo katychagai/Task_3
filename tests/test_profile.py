@@ -1,6 +1,6 @@
 import allure
-import time
 from src.pages.profile_page import ProfilePage
+from src.locators import ProfilePageLocators
 from src.urls import PROFILE_PAGE, LOGIN_PAGE
 
 
@@ -30,14 +30,16 @@ class TestProfile:
         with allure.step("Переходим в личный кабинет"):
             main_page.click_personal_account_button()
             profile_page.wait_for_url(PROFILE_PAGE)
+            # Ждем загрузки страницы профиля
+            profile_page.wait.until(lambda d: profile_page.find_elements(ProfilePageLocators.ORDERS_HISTORY_LINK))
         
         with allure.step("Кликаем на раздел 'История заказов'"):
             profile_page.click_orders_history_link()
-            time.sleep(1) 
+            profile_page.wait_for_orders_history_page(timeout=20)
         
         with allure.step("Проверяем переход в раздел истории заказов"):
             current_url = profile_page.get_current_url()
-            assert "order-history" in current_url 
+            assert "order-history" in current_url
     
     @allure.story("Личный кабинет")
     @allure.title("Выход из аккаунта")
@@ -48,12 +50,12 @@ class TestProfile:
         
         with allure.step("Переходим в личный кабинет"):
             main_page.click_personal_account_button()
-            time.sleep(2)  
             profile_page.wait_for_url(PROFILE_PAGE)
+            # Ждем загрузки страницы профиля
+            profile_page.wait.until(lambda d: profile_page.find_elements(ProfilePageLocators.LOGOUT_BUTTON))
         
         with allure.step("Выполняем выход из аккаунта"):
             profile_page.logout()
-            time.sleep(2)  
         
         with allure.step("Проверяем переход на страницу входа"):
             login_page.wait_for_url(LOGIN_PAGE)

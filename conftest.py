@@ -1,12 +1,12 @@
 import pytest
-import time
 from src.browser_factory import BrowserFactory
 from src.config import get_settings
 from src.pages.main_page import MainPage
 from src.pages.login_page import LoginPage
 from src.api_client import register_user, delete_user
 from src.helpers import generate_user_data
-from src.urls import LOGIN_PAGE, MAIN_PAGE
+from src.urls import LOGIN_PAGE
+from src.locators import LoginPageLocators, MainPageLocators
 
 
 #Универсальная фикстура для создания драйвера браузера
@@ -46,8 +46,6 @@ def authenticated_user(driver):
         
         if register_response.status_code != 403:
             pytest.fail(f"Не удалось создать пользователя через API. Статус: {register_response.status_code}")
-        
-        time.sleep(0.5)
     
     # Получаем токен из ответа
     response_data = register_response.json()
@@ -55,11 +53,12 @@ def authenticated_user(driver):
     
     # Выполняем вход через UI
     main_page.click_login_button()
-    time.sleep(1)
-    login_page.wait_for_url(LOGIN_PAGE)
+    login_page.wait_for_url(LOGIN_PAGE, timeout=30)
+    # Ждем загрузки элементов страницы входа
+    login_page.wait.until(lambda d: login_page.find_elements(LoginPageLocators.LOGIN_BUTTON))
     login_page.login(user_data["email"], user_data["password"])
-    time.sleep(1)
-    main_page.wait_for_url(MAIN_PAGE)
+    # Ждем загрузки элементов главной страницы после входа
+    main_page.wait.until(lambda d: main_page.find_elements(MainPageLocators.ORDER_BUTTON))
     
     yield {
         "user_data": user_data,

@@ -30,13 +30,16 @@ class MainPageLocators:
     ORDER_MODAL = (By.XPATH, "//div[contains(@class, 'Modal_modal')]")
     ORDER_NUMBER = (By.XPATH, "//h2[contains(@class, 'Modal_modal__title_shadow')]")
     ORDER_MODAL_CLOSE_BUTTON = (By.XPATH, "//section[contains(@class, 'Modal_modal_opened')]//button[@type='button']")
+    
+    # Счетчик суммы заказа
+    ORDER_TOTAL_PRICE = (By.XPATH, "//p[@class='text text_type_digits-medium mr-3']")
 
 
 #Локаторы страницы входа
 class LoginPageLocators:
     
     LOGIN_BUTTON = (By.XPATH, "//button[contains(text(), 'Войти')]")
-    FORGOT_PASSWORD_LINK = (By.XPATH, "//a[contains(@href, '/forgot-password')]")
+    FORGOT_PASSWORD_LINK = (By.XPATH, "//a[contains(text(),'Восстановить пароль')]")
 
 
 #Локаторы страницы профиля
@@ -74,7 +77,9 @@ class OrdersFeedPageLocators:
     ORDER_NUMBER_ELEMENT = (By.XPATH, ".//p[contains(@class, 'OrderFeed_number')]")
     
     # Раздел "В работе"
-    IN_PROGRESS_ORDER_LIST = (By.XPATH, "//ul[contains(@class, 'OrderFeed_orderListReady')]")
+    IN_PROGRESS_ORDER_LIST = (By.XPATH, "//ul[contains(@class, 'OrderFeed_orderListReady') and contains(@class, 'OrderFeed_orderList__cBvyi')]")
+    # Шаблон для поиска конкретного заказа в разделе "В работе" по номеру (текст содержит номер заказа, который может начинаться с 0)
+    IN_PROGRESS_ORDER_BY_NUMBER = "//ul[contains(@class, 'OrderFeed_orderListReady') and contains(@class, 'OrderFeed_orderList__cBvyi')]//li[contains(text(), '{}')]"
     
     # Заказы пользователя
     USER_ORDERS = (By.XPATH, "//div[contains(@class, 'OrderItem') and contains(@class, 'OrderItem_own')]")

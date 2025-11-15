@@ -8,6 +8,10 @@ class ForgotPasswordPage(BasePage):
         self.send_keys(BasePageLocators.EMAIL_INPUT, email)
     
     def click_restore_button(self):
-        self.click(ForgotPasswordPageLocators.RESTORE_BUTTON)
+        self.close_modals_if_present()
+        self.wait_for_modal_to_disappear()
+        # Используем JS-клик для обхода перекрытия модальными окнами
+        element = self.find_element_clickable(ForgotPasswordPageLocators.RESTORE_BUTTON)
+        self.click_via_js(element)
     
 

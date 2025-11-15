@@ -1,5 +1,6 @@
 from .base_page import BasePage
 from ..locators import LoginPageLocators, BasePageLocators
+from ..urls import MAIN_PAGE
 
 
 #Страница входа в аккаунт
@@ -15,10 +16,19 @@ class LoginPage(BasePage):
         self.click(LoginPageLocators.LOGIN_BUTTON)
     
     def click_forgot_password_link(self):
-        self.click(LoginPageLocators.FORGOT_PASSWORD_LINK)
+        self.close_modals_if_present()
+        self.wait_for_modal_to_disappear()
+        # Ждем, пока ссылка станет кликабельной
+        element = self.find_element_clickable(LoginPageLocators.FORGOT_PASSWORD_LINK)
+        href = element.get_attribute("href")
+        if href:
+            self.navigate_to_url(href)
+        else:
+            self.click_via_js(element)
     
     def login(self, email, password):
         self.enter_email(email)
         self.enter_password(password)
         self.click_login_button()
+        self.wait_for_url(MAIN_PAGE, timeout=30)
 
